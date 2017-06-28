@@ -10,6 +10,17 @@ Via Composer
 $ composer require prologuetech/big
 ```
 
+## Configuration
+
+By default we use the following global config options with BigQuery.
+
+```php
+$this->options = [
+    'useLegacySql' => false,
+    'useQueryCache' => false,
+];
+```
+
 ## Usage
 
 Publish our config file into your application:
