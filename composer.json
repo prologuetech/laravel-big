@@ -1,5 +1,5 @@
 {
-    "name": "prolougetech/big",
+    "name": "prologuetech/big",
     "type": "library",
     "description": "Google BigQuery for Laravel",
     "keywords": [
