@@ -36,8 +36,8 @@ class Big
 
         // Setup google service with credentials
         $googleService = new ServiceBuilder([
-            'keyFilePath' => config('prologue-big.auth_file'),
-            'projectId' => config('prologue-big.project_id'),
+            'keyFilePath' => config('prologue-big.big.auth_file'),
+            'projectId' => config('prologue-big.big.project_id'),
         ]);
 
         // Return our instance of BigQuery
