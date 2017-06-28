@@ -50,8 +50,8 @@
         }
     },
     "config": {
-        "sort-packages": true
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+        "sort-packages": true,
+        "minimum-stability": "dev",
+        "prefer-stable": true
+    }
 }
