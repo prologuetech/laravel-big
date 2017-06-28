@@ -21,7 +21,7 @@ $this->options = [
 ];
 ```
 
-## Usage
+## Setup
 
 Publish our config file into your application:
 
@@ -46,6 +46,48 @@ Prolougetech\Big\BigServiceProvider::class,
 You now have access to a familiar laravel experience, enjoy!
 
 ## How to use
+
+### Tables
+
+When creating tables in BQ we automatically flip a Eloquent model schema for you. Let's cover an example of archiving data
+from our events table into BQ using laravel's chunk method.
+
+```php
+$datasetId = 'test';
+$tableId = 'events';
+
+// Create our BQ helper
+$big = new Big();
+
+// Create table, we will pass in a mocked model to mutate into BQ schema
+// Note: create table will only make a new table if it does not exist
+
+/** @var Google\Cloud\BigQuery\Table $table */
+$table = $big->createFromModel($datasetId, $tableId, new Event());
+
+// Let's stream our events into BQ in large chunks
+Event::notArchived()->chunk(1000, function ($events) use ($big, $table) {
+    // Prepare our rows
+    $rows = $big->prepareData($events);
+
+    // Stream into BQ, you may also pass in any options with a 3rd param.
+    // Note: By default we use: 'ignoreUnknownValues' => true
+    $big->insert($table, $rows);
+
+    // Get our current id's
+    /** @var Illuminate\Support\Collection $events */
+    $ids = $events->pluck('id')->toArray();
+
+    // Update these event's as processed
+    Event::whereIn('id', $ids)->update([
+        'system_processed' => 1
+    ]);
+});
+```
+
+That's it! You now have a replica of your events table in BigQuery, enjoy!
+
+### Queries
 
 Instantiating ```Big``` will automatically setup a Google ServiceBuilder and give us direct access to ```BigQuery``` through
 our internals via ```$big->query```. However there are many helpers built into big that make interacting with BigQuery a
