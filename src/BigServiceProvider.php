@@ -20,7 +20,10 @@ class BigServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/prologue-big.php', 'services');
+        $configPath = __DIR__ . '/../config/prologue-big.php';
+        $this->publishes([
+            $configPath => config_path('prologue-big.php'),
+        ], 'config');
     }
 
     /**
@@ -30,6 +33,8 @@ class BigServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->mergeConfigFrom(__DIR__ . '/../config/prologue-big.php', 'prologue-big');
+
         $this->app->singleton(Big::class, function ($app) {
             return new Big();
         });
