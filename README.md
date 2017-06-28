@@ -66,6 +66,7 @@ $big = new Big();
 $table = $big->createFromModel($datasetId, $tableId, new Event());
 
 // Let's stream our events into BQ in large chunks
+// Note: notArchived() is a simple scope, use whatever scopes you have on your model
 Event::notArchived()->chunk(1000, function ($events) use ($big, $table) {
     // Prepare our rows
     $rows = $big->prepareData($events);
@@ -90,11 +91,11 @@ That's it! You now have a replica of your events table in BigQuery, enjoy!
 ### Queries
 
 Instantiating ```Big``` will automatically setup a Google ServiceBuilder and give us direct access to ```BigQuery``` through
-our internals via ```$big->query```. However there are many helpers built into big that make interacting with BigQuery a
-piece of cake (or a tasty carrot if your into that kind of thing).
+our internals via ```$big->query```. However there are many helpers built into Big that make interacting with BigQuery a
+piece of cake (or a tasty carrot if you're into that kind of thing).
 
 For example when running a query on BigQuery we must use the reload method in a loop to poll results. Big comes with a
-useful method ```run```:
+useful method ```run``` so all you need to do is this:
 
 ``` php
 $query = 'SELECT count(id) FROM test.events';
@@ -103,7 +104,8 @@ $big = new Big();
 $results = $big->run($query);
 ```
 
-When using ```run``` we automatically poll BigQuery and return all results as a laravel collection object for you.
+When using ```run``` we automatically poll BigQuery and return all results as a laravel collection object for you so you
+can enjoy your results as a refreshing cup of Laravel.
 
 ## Change log
 
