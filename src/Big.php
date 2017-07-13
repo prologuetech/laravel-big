@@ -61,7 +61,7 @@ class Big
         // Setup our result checks
         $isComplete = $queryResults->isComplete();
 
-        while (!$isComplete) {
+        while (! $isComplete) {
             sleep(1); // let's wait for a moment...
             $queryResults->reload(); // trigger a network request
             $isComplete = $queryResults->isComplete(); // check the query's status
@@ -82,6 +82,7 @@ class Big
      * @param array $rows
      * @param array|null $options
      * @throws Exception
+     * @return bool
      */
     public function insert($table, $rows, $options = null)
     {
@@ -89,7 +90,9 @@ class Big
         $options = $options ?? ['ignoreUnknownValues' => true];
 
         $insertResponse = $table->insertRows($rows, $options);
-        if (!$insertResponse->isSuccessful()) {
+        if ($insertResponse->isSuccessful()) {
+            return true;
+        } else {
             $i = 0;
             foreach ($insertResponse->failedRows() as $row) {
                 foreach ($row['errors'] as $error) {
@@ -97,7 +100,7 @@ class Big
                     $errors[] = $error;
                 }
             }
-            throw new Exception('Failed to insert ' . $i . ' rows to BigQuery on table: ' . $table->id());
+            throw new Exception('Failed to insert '.$i.' rows to BigQuery on table: '.$table->id());
         }
     }
 
@@ -207,19 +210,19 @@ class Big
     public static function flipModel($model)
     {
         // Verify we have an Eloquent Model
-        if (!$model instanceof Model) {
-            throw new Exception(__METHOD__ . ' requires a Eloquent model, ' . get_class($model) . ' used.');
+        if (! $model instanceof Model) {
+            throw new Exception(__METHOD__.' requires a Eloquent model, '.get_class($model).' used.');
         }
 
         // Cache name based on table
-        $cacheName = __CLASS__ . '.cache.' . $model->getTable();
+        $cacheName = __CLASS__.'.cache.'.$model->getTable();
 
         // Cache duration
         $liveFor = Carbon::now()->addDays(5);
 
         // Cache our results as these rarely change
         $fields = Cache::remember($cacheName, $liveFor, function () use ($model) {
-            return DB::select('describe ' . $model->getTable());
+            return DB::select('describe '.$model->getTable());
         });
 
         // Loop our fields and return a Google BigQuery field map array
