@@ -122,17 +122,28 @@ class Big
     }
 
     /**
-     * @param $data
+     * @param \Illuminate\Database\Eloquent\Collection|array $data
      * @return array
      */
     public function prepareData($data)
     {
         $preparedData = [];
+
+        // We loop our data and handle object conversion to an array
         foreach ($data as $item) {
-            if (is_array($item)) {
-                $preparedData[] = ['data' => $item];
+            if (! is_array($item)) {
+                $item = $item->toArray();
+            }
+
+            // If we have an id column use Google's insertId
+            // https://cloud.google.com/bigquery/streaming-data-into-bigquery#dataconsistency
+            if (in_array('id', $item)) {
+                $preparedData[] = [
+                    'insertId' => $item['id'],
+                    'data' => $item,
+                ];
             } else {
-                $preparedData[] = ['data' => $item->toArray()];
+                $preparedData[] = ['data' => $item];
             }
         }
 
