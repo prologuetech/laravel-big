@@ -247,7 +247,7 @@ class Big
             switch ($shortType) {
                 // Custom handler
                 case Types::TIMESTAMP:
-                    $type = 'DATETIME';
+                    $type = 'TIMESTAMP';
                     break;
                 // Custom handler
                 case Types::INT:
