@@ -175,10 +175,11 @@ class Big
      * @param string $datasetId
      * @param string $tableId
      * @param Model $model
+     * @param bool $useDelay
      * @throws Exception
      * @return Table|null
      */
-    public function createFromModel($datasetId, $tableId, $model)
+    public function createFromModel($datasetId, $tableId, $model, $useDelay = true)
     {
         // Check if we have this table
         $table = $this->getTable($datasetId, $tableId);
@@ -196,6 +197,11 @@ class Big
 
         // Create the table
         $table = $dataset->createTable($tableId, $options);
+
+        // New tables are not instantly available, we will insert a delay to help the developer
+        if ($useDelay) {
+            sleep(10);
+        }
 
         return $table;
     }
