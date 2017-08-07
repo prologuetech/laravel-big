@@ -290,6 +290,9 @@ class Big
                 case Types::TIME:
                     $type = 'TIME';
                     break;
+                case Types::JSON:
+                    $type = 'STRUCT';
+                    break;
                 default:
                     $type = 'STRING';
                     break;
