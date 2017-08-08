@@ -138,16 +138,39 @@ class Big
                 $item = $item->toArray();
             }
 
+            $struct = [];
+
+            // Handle nested array's as STRUCT<>
+            foreach ($item as $field => $value) {
+                // Map array's to STRUCT name/type
+                if (is_array($value)) {
+                    foreach ($value as $key => $attr) {
+                        $struct[] = [
+                            'name' => $key,
+                            'type' => strtoupper(gettype($attr)),
+                        ];
+                    }
+                }
+            }
+
             // If we have an id column use Google's insertId
             // https://cloud.google.com/bigquery/streaming-data-into-bigquery#dataconsistency
             if (in_array('id', $item)) {
-                $preparedData[] = [
+                $rowData = [
                     'insertId' => $item['id'],
                     'data' => $item,
+                    'fields' => $struct,
                 ];
             } else {
-                $preparedData[] = ['data' => $item];
+                $rowData = ['data' => $item];
             }
+
+            // Set our struct definition if we have one
+            if (! empty($struct)) {
+                $rowData['fields'] = $struct;
+            }
+
+            $preparedData[] = $rowData;
         }
 
         return $preparedData;
@@ -175,11 +198,12 @@ class Big
      * @param string $datasetId
      * @param string $tableId
      * @param Model $model
+     * @param array|null $structs
      * @param bool $useDelay
      * @throws Exception
      * @return Table|null
      */
-    public function createFromModel($datasetId, $tableId, $model, $useDelay = true)
+    public function createFromModel($datasetId, $tableId, $model, $structs = null, $useDelay = true)
     {
         // Check if we have this table
         $table = $this->getTable($datasetId, $tableId);
@@ -193,7 +217,7 @@ class Big
         $dataset = $this->query->dataset($datasetId);
 
         // Flip our Eloquent model into a BigQuery schema map
-        $options = ['schema' => static::flipModel($model)];
+        $options = ['schema' => static::flipModel($model, $structs)];
 
         // Create the table
         $table = $dataset->createTable($tableId, $options);
@@ -210,10 +234,11 @@ class Big
      * Flip a Laravel Eloquent Models into a Big Query Schemas
      *
      * @param Model $model
+     * @param array|null $structs
      * @throws Exception
      * @return array
      */
-    public static function flipModel($model)
+    public static function flipModel($model, $structs)
     {
         // Verify we have an Eloquent Model
         if (! $model instanceof Model) {
@@ -232,16 +257,17 @@ class Big
         });
 
         // Loop our fields and return a Google BigQuery field map array
-        return ['fields' => static::fieldMap($fields)];
+        return ['fields' => static::fieldMap($fields, $structs)];
     }
 
     /**
      * Map our fields to BigQuery compatible data types
      *
      * @param array $fields
+     * @param array|null $structs
      * @return array
      */
-    public static function fieldMap($fields)
+    public static function fieldMap($fields, $structs)
     {
         // Holders
         $map = [];
@@ -290,19 +316,34 @@ class Big
                 case Types::TIME:
                     $type = 'TIME';
                     break;
-                // Skip JSON fields
-                // TODO: Handle these somehow
                 case Types::JSON:
-                    continue 2;
+                    // JSON data-types require a struct to be defined, here we check for developer hints or skip these
+                    if (! empty($structs)) {
+                        $struct = $structs[$value->Field];
+                    } else {
+                        continue 2;
+                    }
+
+                    $type = 'STRUCT';
+
                     break;
                 default:
                     $type = 'STRING';
                     break;
             }
-            $map[] = [
+            $fieldData = [
                 'name' => $value->Field,
                 'type' => $type,
             ];
+
+            // Set our struct definition if we have one
+            if (! empty($struct)) {
+                $fieldData['fields'] = $struct;
+
+                unset($struct);
+            }
+
+            $map[] = $fieldData;
         }
 
         // Return our map
