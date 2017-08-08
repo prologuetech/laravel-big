@@ -290,8 +290,10 @@ class Big
                 case Types::TIME:
                     $type = 'TIME';
                     break;
+                // Skip JSON fields
+                // TODO: Handle these somehow
                 case Types::JSON:
-                    $type = 'STRUCT';
+                    continue 2;
                     break;
                 default:
                     $type = 'STRING';
