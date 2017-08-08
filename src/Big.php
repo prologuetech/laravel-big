@@ -81,8 +81,7 @@ class Big
      * @param Table $table
      * @param array $rows
      * @param array|null $options
-     * @throws Exception
-     * @return bool
+     * @return bool|array
      */
     public function insert($table, $rows, $options = null)
     {
@@ -93,14 +92,13 @@ class Big
         if ($insertResponse->isSuccessful()) {
             return true;
         } else {
-            $i = 0;
             foreach ($insertResponse->failedRows() as $row) {
                 foreach ($row['errors'] as $error) {
-                    $i++;
                     $errors[] = $error;
                 }
             }
-            throw new Exception('Failed to insert '.$i.' rows to BigQuery on table: '.$table->id());
+
+            return $errors ?? null;
         }
     }
 
