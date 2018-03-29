@@ -109,7 +109,7 @@ class Big
                 }
             }
 
-            throw new Exception(json_encode($errors));
+            return $errors ?? [];
         }
     }
 
