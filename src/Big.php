@@ -24,6 +24,11 @@ class Big
     public $options;
 
     /**
+     * @var string
+     */
+    public $defaultDataset;
+
+    /**
      * Setup our Big wrapper with Google's BigQuery service
      */
     public function __construct()
@@ -40,6 +45,9 @@ class Big
             'projectId' => config('prologue-big.big.project_id'),
         ]);
 
+        // Set a default dataset
+        $this->defaultDataset = config('prologue-big.big.default_dataset');
+
         // Return our instance of BigQuery
         $this->query = $googleService->bigQuery();
     }
@@ -49,6 +57,7 @@ class Big
      *
      * @param string $query
      * @param array|null $options
+     *
      * @return \Illuminate\Support\Collection
      */
     public function run($query, $options = null)
@@ -56,13 +65,13 @@ class Big
         // Set default options if nothing is passed in
         $options = $options ?? $this->options;
 
-        $queryResults = $this->query->runQuery($query, $options);
+        $queryResults = $this->query->runQuery($this->query->query($query), $options);
 
         // Setup our result checks
         $isComplete = $queryResults->isComplete();
 
-        while (! $isComplete) {
-            sleep(1); // let's wait for a moment...
+        while (!$isComplete) {
+            sleep(.5); // let's wait for a moment...
             $queryResults->reload(); // trigger a network request
             $isComplete = $queryResults->isComplete(); // check the query's status
         }
@@ -81,7 +90,9 @@ class Big
      * @param Table $table
      * @param array $rows
      * @param array|null $options
+     *
      * @return bool|array
+     * @throws \Exception
      */
     public function insert($table, $rows, $options = null)
     {
@@ -98,18 +109,22 @@ class Big
                 }
             }
 
-            return $errors ?? null;
+            return $errors ?? [];
         }
     }
 
     /**
-     * @param string $dataset
      * @param string $tableName
+     * @param string|null $dataset
+     *
      * @return Table|null
      * @throws Exception
      */
-    public function getTable($dataset, $tableName)
+    public function getTable($tableName, $dataset = null)
     {
+        // Defaults
+        $dataset = $dataset ?? $this->defaultDataset;
+
         $tables = $this->query->dataset($dataset)->tables();
 
         /** @var Table $table */
@@ -123,7 +138,8 @@ class Big
     }
 
     /**
-     * @param \Illuminate\Database\Eloquent\Collection|array $data
+     * @param \Illuminate\Database\Eloquent\Collection|\Illuminate\Support\Collection|array $data
+     *
      * @return array
      */
     public function prepareData($data)
@@ -132,7 +148,7 @@ class Big
 
         // We loop our data and handle object conversion to an array
         foreach ($data as $item) {
-            if (! is_array($item)) {
+            if (!is_array($item)) {
                 $item = $item->toArray();
             }
 
@@ -164,7 +180,7 @@ class Big
             }
 
             // Set our struct definition if we have one
-            if (! empty($struct)) {
+            if (!empty($struct)) {
                 $rowData['fields'] = $struct;
             }
 
@@ -198,13 +214,14 @@ class Big
      * @param Model $model
      * @param array|null $structs
      * @param bool $useDelay
+     *
      * @throws Exception
      * @return Table|null
      */
     public function createFromModel($datasetId, $tableId, $model, $structs = null, $useDelay = true)
     {
         // Check if we have this table
-        $table = $this->getTable($datasetId, $tableId);
+        $table = $this->getTable($tableId, $datasetId);
 
         // If this table has been created, return it
         if ($table instanceof Table) {
@@ -233,25 +250,26 @@ class Big
      *
      * @param Model $model
      * @param array|null $structs
+     *
      * @throws Exception
      * @return array
      */
     public static function flipModel($model, $structs)
     {
         // Verify we have an Eloquent Model
-        if (! $model instanceof Model) {
-            throw new Exception(__METHOD__.' requires a Eloquent model, '.get_class($model).' used.');
+        if (!$model instanceof Model) {
+            throw new Exception(__METHOD__ . ' requires a Eloquent model, ' . get_class($model) . ' used.');
         }
 
         // Cache name based on table
-        $cacheName = __CLASS__.'.cache.'.$model->getTable();
+        $cacheName = __CLASS__ . '.cache.' . $model->getTable();
 
         // Cache duration
         $liveFor = Carbon::now()->addDays(5);
 
         // Cache our results as these rarely change
         $fields = Cache::remember($cacheName, $liveFor, function () use ($model) {
-            return DB::select('describe '.$model->getTable());
+            return DB::select('describe ' . $model->getTable());
         });
 
         // Loop our fields and return a Google BigQuery field map array
@@ -263,6 +281,7 @@ class Big
      *
      * @param array $fields
      * @param array|null $structs
+     *
      * @return array
      */
     public static function fieldMap($fields, $structs)
@@ -316,7 +335,7 @@ class Big
                     break;
                 case Types::JSON:
                     // JSON data-types require a struct to be defined, here we check for developer hints or skip these
-                    if (! empty($structs)) {
+                    if (!empty($structs)) {
                         $struct = $structs[$value->Field];
                     } else {
                         continue 2;
@@ -335,7 +354,7 @@ class Big
             ];
 
             // Set our struct definition if we have one
-            if (! empty($struct)) {
+            if (!empty($struct)) {
                 $fieldData['fields'] = $struct;
 
                 unset($struct);
@@ -346,5 +365,43 @@ class Big
 
         // Return our map
         return $map;
+    }
+
+    /**
+     * Return the max ID
+     *
+     * @param string $table
+     * @param string|null $dataset
+     *
+     * @return mixed
+     */
+    public function getMaxId($table, $dataset = null)
+    {
+        // Defaults
+        $dataset = $dataset ?? $this->defaultDataset;
+
+        // Run our max ID query
+        $results = $this->run('SELECT max(id) id FROM `' . $dataset . '.' . $table . '`');
+
+        return $results->first()['id'];
+    }
+
+    /**
+     * Return the max created_at date
+     *
+     * @param string $table
+     * @param string|null $dataset
+     *
+     * @return mixed
+     */
+    public function getMaxCreationDate($table, $dataset = null)
+    {
+        // Defaults
+        $dataset = $dataset ?? $this->defaultDataset;
+
+        // Run our max ID query
+        $results = $this->run('SELECT max(created_at) created_at FROM `' . $dataset . '.' . $table . '`');
+
+        return $results->first()['created_at'];
     }
 }
