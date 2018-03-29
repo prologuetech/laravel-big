@@ -27,4 +27,5 @@ class Types
     const FLOAT = 'float';
     const CHAR = 'char';
     const ENUM = 'enum';
+    const DOUBLE = 'double';
 }
