@@ -368,6 +368,8 @@ class Big
     }
 
     /**
+     * Return the max ID
+     *
      * @param string $table
      * @param string|null $dataset
      *
@@ -382,5 +384,24 @@ class Big
         $results = $this->run('SELECT max(id) id FROM `' . $dataset . '.' . $table . '`');
 
         return $results->first()['id'];
+    }
+
+    /**
+     * Return the max created_at date
+     *
+     * @param string $table
+     * @param string|null $dataset
+     *
+     * @return mixed
+     */
+    public function getMaxCreationDate($table, $dataset = null)
+    {
+        // Defaults
+        $dataset = $dataset ?? $this->defaultDataset;
+
+        // Run our max ID query
+        $results = $this->run('SELECT max(created_at) created_at FROM `' . $dataset . '.' . $table . '`');
+
+        return $results->first()['created_at'];
     }
 }
