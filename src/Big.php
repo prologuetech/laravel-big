@@ -221,7 +221,7 @@ class Big
     public function createFromModel($datasetId, $tableId, $model, $structs = null, $useDelay = true)
     {
         // Check if we have this table
-        $table = $this->getTable($datasetId, $tableId);
+        $table = $this->getTable($tableId, $datasetId);
 
         // If this table has been created, return it
         if ($table instanceof Table) {
