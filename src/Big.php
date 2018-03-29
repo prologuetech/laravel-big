@@ -369,11 +369,11 @@ class Big
 
     /**
      * @param string $table
-     * @param string $dataset
+     * @param string|null $dataset
      *
      * @return mixed
      */
-    public function getMaxId($table, $dataset)
+    public function getMaxId($table, $dataset = null)
     {
         // Defaults
         $dataset = $dataset ?? $this->defaultDataset;
