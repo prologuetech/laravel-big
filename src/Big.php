@@ -24,6 +24,11 @@ class Big
     public $options;
 
     /**
+     * @var string
+     */
+    public $defaultDataset;
+
+    /**
      * Setup our Big wrapper with Google's BigQuery service
      */
     public function __construct()
@@ -39,6 +44,9 @@ class Big
             'keyFilePath' => config('prologue-big.big.auth_file'),
             'projectId' => config('prologue-big.big.project_id'),
         ]);
+
+        // Set a default dataset
+        $this->defaultDataset = config('prologue-big.big.default_dataset');
 
         // Return our instance of BigQuery
         $this->query = $googleService->bigQuery();
@@ -106,14 +114,17 @@ class Big
     }
 
     /**
-     * @param string $dataset
      * @param string $tableName
+     * @param string|null $dataset
      *
      * @return Table|null
      * @throws Exception
      */
-    public function getTable($dataset, $tableName)
+    public function getTable($tableName, $dataset = null)
     {
+        // Defaults
+        $dataset = $dataset ?? $this->defaultDataset;
+
         $tables = $this->query->dataset($dataset)->tables();
 
         /** @var Table $table */
@@ -364,6 +375,10 @@ class Big
      */
     public function getMaxId($table, $dataset)
     {
+        // Defaults
+        $dataset = $dataset ?? $this->defaultDataset;
+
+        // Run our max ID query
         $results = $this->run('SELECT max(id) id FROM `' . $dataset . '.' . $table . '`');
 
         return $results->first()['id'];
