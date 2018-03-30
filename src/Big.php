@@ -333,6 +333,9 @@ class Big
                 case Types::TIME:
                     $type = 'TIME';
                     break;
+                case Types::DOUBLE:
+                    $type = 'FLOAT';
+                    break;
                 case Types::JSON:
                     // JSON data-types require a struct to be defined, here we check for developer hints or skip these
                     if (!empty($structs)) {
