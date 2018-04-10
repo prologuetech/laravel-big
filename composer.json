@@ -8,7 +8,7 @@
         "Google",
         "BigQuery"
     ],
-    "homepage": "https://github.com/prolougetech/laravel-big",
+    "homepage": "https://github.com/prologuetech/laravel-big",
     "license": "MIT",
     "authors": [
         {
@@ -31,12 +31,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Prolougetech\\Big\\": "src"
+            "Prologuetech\\Big\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Prolougetech\\Big\\": "tests"
+            "Prologuetech\\Big\\": "tests"
         }
     },
     "scripts": {
@@ -52,10 +52,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Prolougetech\\Big\\BigServiceProvider"
+                "Prologuetech\\Big\\BigServiceProvider"
             ],
             "aliases": {
-                "Big": "Prolougetech\\Big\\BigServiceProvider"
+                "Big": "Prologuetech\\Big\\BigServiceProvider"
             }
         }
     }
