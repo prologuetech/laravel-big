@@ -1,6 +1,6 @@
 <?php
 
-namespace Prolougetech\Big;
+namespace Prologuetech\Big;
 
 use Carbon\Carbon;
 use Exception;
@@ -351,9 +351,15 @@ class Big
                     $type = 'STRING';
                     break;
             }
+
+            // Nullable handler
+            $mode = (strtolower($value->Null) === 'yes' ? 'NULLABLE' : 'REQUIRED');
+
+            // Construct our BQ schema data
             $fieldData = [
                 'name' => $value->Field,
                 'type' => $type,
+                'mode' => $mode,
             ];
 
             // Set our struct definition if we have one

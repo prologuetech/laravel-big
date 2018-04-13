@@ -40,7 +40,7 @@ BIG_AUTH_FILE=/home/vagrant/app/storage/my-auth-0000.json
 Add our big service provider to your application providers:
 
 ``` php
-Prolougetech\Big\BigServiceProvider::class,
+Prologuetech\Big\BigServiceProvider::class,
 ```
 
 You now have access to a familiar laravel experience, enjoy!

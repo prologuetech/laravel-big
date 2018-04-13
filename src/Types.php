@@ -1,6 +1,6 @@
 <?php
 
-namespace Prolougetech\Big;
+namespace Prologuetech\Big;
 
 class Types
 {
