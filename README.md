@@ -26,7 +26,7 @@ $this->options = [
 Publish our config file into your application:
 
 ``` bash
-php artisan vendor:publish --provider=Prologuetech\Big
+php artisan vendor:publish --provider="Prologuetech\Big\BigServiceProvider"
 ```
 
 Set our required environment variables ```BIG_AUTH_FILE``` and ```BIG_PROJECT_ID```:
