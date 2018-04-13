@@ -4,6 +4,18 @@ All Notable changes will be documented in this file.
 
 Updates should follow the [Keep a CHANGELOG](http://keepachangelog.com/) principles.
 
+## [Unreleased]
+### Added
+- Added nullable/required field modes.
+
+### Changed
+- Fix company name typo.
+- Fixed `vendor:publish` command.
+- Google Cloud SDK 0.49 -> 0.60.
+
+### Removed
+- Removed old composer requirements.
+
 ## [0.1.2] - 2018-4-06
 ### Added
 - Added double support for BQ types.
