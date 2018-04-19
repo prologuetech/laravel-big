@@ -39,11 +39,18 @@ class Big
             'useQueryCache' => false,
         ];
 
-        // Setup google service with credentials
-        $googleService = new ServiceBuilder([
-            'keyFilePath' => config('prologue-big.big.auth_file'),
+        // Build our Google config options
+        $config = [
             'projectId' => config('prologue-big.big.project_id'),
-        ]);
+        ];
+
+        // Allow Google's default application credentials if developer chooses
+        if (!is_null(config('prologue-big.big.auth_file'))) {
+            $config['keyFilePath'] = config('prologue-big.big.auth_file');
+        }
+
+        // Setup google service with credentials
+        $googleService = new ServiceBuilder($config);
 
         // Set a default dataset
         $this->defaultDataset = config('prologue-big.big.default_dataset');

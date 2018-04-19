@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Added
 - Added nullable/required field modes.
+- Added support for Google's ADC.
 
 ### Changed
 - Fix company name typo.

@@ -10,7 +10,32 @@ Via Composer
 $ composer require prologuetech/big
 ```
 
-## Configuration
+## Setup
+Publish our config file into your application:
+
+``` bash
+php artisan vendor:publish --provider="Prologuetech\Big\BigServiceProvider"
+```
+
+You should have a `config/prologue-big.php` file to configure defaults.
+
+### Laravel 5.4.x
+Older versions of Laravel require you to add our big service provider to your application providers array in `config/app.php`:
+
+``` php
+Prologuetech\Big\BigServiceProvider::class,
+```
+
+You now have access to a familiar laravel experience, enjoy!
+
+## Google Authentication
+The Google SDK supports Application Default Credentials (ADC) and thus this package does as well. You may leave your `auth_file` field inside of your config file `null` to use ADC.
+
+For more information see the [adc docs](https://cloud.google.com/docs/authentication/production#auth-cloud-implicit-php).
+
+## How to use
+
+### Configuration
 
 By default we use the following global config options with BigQuery.
 
@@ -20,32 +45,6 @@ $this->options = [
     'useQueryCache' => false,
 ];
 ```
-
-## Setup
-
-Publish our config file into your application:
-
-``` bash
-php artisan vendor:publish --provider="Prologuetech\Big\BigServiceProvider"
-```
-
-Set our required environment variables ```BIG_AUTH_FILE``` and ```BIG_PROJECT_ID```:
-
-```.env:```
-``` php
-BIG_PROJECT_ID=my-project-0000000
-BIG_AUTH_FILE=/home/vagrant/app/storage/my-auth-0000.json
-```
-
-Add our big service provider to your application providers:
-
-``` php
-Prologuetech\Big\BigServiceProvider::class,
-```
-
-You now have access to a familiar laravel experience, enjoy!
-
-## How to use
 
 ### Tables
 
