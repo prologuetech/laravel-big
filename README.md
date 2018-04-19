@@ -29,7 +29,7 @@ Prologuetech\Big\BigServiceProvider::class,
 You now have access to a familiar laravel experience, enjoy!
 
 ## Google Authentication
-The Google SDK supports Application Default Credentials (ADC) and thus this package does as well. You may leave your `auth_file` field inside of your config file `null` to use ADC.
+The Google SDK supports Application Default Credentials (ADC) and thus this package does as well. You may leave your `auth_file` field inside of your config file `null` to use ADC. Credentials fetcher is not currently supported but may be added in the future.
 
 For more information see the [adc docs](https://cloud.google.com/docs/authentication/production#auth-cloud-implicit-php).
 
