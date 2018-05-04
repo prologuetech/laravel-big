@@ -415,9 +415,29 @@ class Big
         // Defaults
         $dataset = $dataset ?? $this->defaultDataset;
 
-        // Run our max ID query
+        // Run our max created_at query
         $results = $this->run('SELECT max(created_at) created_at FROM `' . $dataset . '.' . $table . '`');
 
         return $results->first()['created_at'];
+    }
+
+    /**
+     * Return the max of field
+     *
+     * @param string $table
+     * @param string $field
+     * @param string|null $dataset
+     *
+     * @return mixed
+     */
+    public function getMaxField($table, $field, $dataset = null)
+    {
+        // Defaults
+        $dataset = $dataset ?? $this->defaultDataset;
+
+        // Run our max query
+        $results = $this->run('SELECT max(' . $field . ') ' . $field . ' FROM `' . $dataset . '.' . $table . '`');
+
+        return $results->first()[$field];
     }
 }
