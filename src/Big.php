@@ -101,13 +101,15 @@ class Big
      * @return bool|array
      * @throws \Exception
      */
-    public function insert($table, $rows, $options = null)
+    public function insert($table, $rows, $options = null, $verbose = null)
     {
         // Set default options if nothing is passed in
         $options = $options ?? ['ignoreUnknownValues' => true];
 
         $insertResponse = $table->insertRows($rows, $options);
-        if ($insertResponse->isSuccessful()) {
+
+
+        if ($insertResponse->isSuccessful() && ! $verbose) {
             return true;
         } else {
             foreach ($insertResponse->failedRows() as $row) {
@@ -115,9 +117,19 @@ class Big
                     $errors[] = $error;
                 }
             }
+            // If verbose return affected_rows, info, and any errors
+            if ($verbose)
+            {
+                $errors = $errors ?? [];
 
-            return $errors ?? [];
+                return ['affected_rows' => count($rows) - count($errors), 'errors' => $errors, 'info' => $insertResponse->info()];
+            }
+            else {
+                return $errors ?? [];
+            }
         }
+
+
     }
 
     /**
