@@ -168,13 +168,13 @@ class Big
         // We loop our data and handle object conversion to an array
         foreach ($data as $item) {
             if (!is_array($item)) {
-                $item = $item->toArray();
+                $item_arr = $item->toArray();
             }
 
             $struct = [];
 
             // Handle nested array's as STRUCT<>
-            foreach ($item as $field => $value) {
+            foreach ($item_arr as $field => $value) {
                 // Map array's to STRUCT name/type
                 if (is_array($value)) {
                     foreach ($value as $key => $attr) {
@@ -186,16 +186,16 @@ class Big
                 }
             }
 
-            // If we have an id column use Google's insertId
+            // If we have an incrementing column use Google's insertId
             // https://cloud.google.com/bigquery/streaming-data-into-bigquery#dataconsistency
-            if (array_key_exists('id', $item)) {
+            if ($item->incrementing) {
                 $rowData = [
-                    'insertId' => $item['id'],
-                    'data' => $item,
+                    'insertId' => $item->getKey(),
+                    'data' => $item_arr,
                     'fields' => $struct,
                 ];
             } else {
-                $rowData = ['data' => $item];
+                $rowData = ['data' => $item_arr];
             }
 
             // Set our struct definition if we have one
@@ -288,9 +288,13 @@ class Big
 
         // Cache our results as these rarely change
         $fields = Cache::remember($cacheName, $liveFor, function () use ($model) {
-            return DB::select('describe ' . $model->getTable());
+            return DB::connection($model->getConnectionName())->select('describe ' . $model->getTable());
         });
 
+        //excludes fields that are hidden
+        $fields = collect($fields)->reject(function ($field) use ($model) {
+            return in_array($field->Field, $model->getHidden());
+        })->all();
         // Loop our fields and return a Google BigQuery field map array
         return ['fields' => static::fieldMap($fields, $structs)];
     }
