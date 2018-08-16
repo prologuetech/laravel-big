@@ -72,7 +72,7 @@ class Big
         // Set default options if nothing is passed in
         $options = $options ?? $this->options;
 
-        $queryResults = $this->query->runQuery($this->query->query($query), $options);
+        $queryResults = $this->query->runQuery($this->query->query($query, $options));
 
         // Setup our result checks
         $isComplete = $queryResults->isComplete();
